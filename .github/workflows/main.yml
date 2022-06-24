@@ -23,6 +23,7 @@ jobs:
 
       # Test
       - name: Run tests
+        id: tests
         uses: game-ci/unity-test-runner@v2
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -33,13 +34,13 @@ jobs:
         if: always()
         with:
           name: Test results
-          path: ${{ steps.myTestStep.outputs.artifactsPath }}
+          path: ${{ steps.tests.outputs.artifactsPath }}
           
       - uses: actions/upload-artifact@v2
         if: always()
         with:
           name: Coverage results
-          path: ${{ steps.myTestStep.outputs.coveragePath }}
+          path: ${{ steps.tests.outputs.coveragePath }}
 
       # Build
 #      - name: Build project
