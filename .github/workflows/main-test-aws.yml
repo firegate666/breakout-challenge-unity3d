@@ -1,0 +1,34 @@
+name: Actions Test AWS 😎
+
+on: [workflow_dispatch, push, pull_request]
+
+jobs:
+  build:
+    name: Build my project ✨
+    runs-on: ubuntu-latest
+    steps:
+      # AWS setup
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      
+      # Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+
+      # cloud runner
+      - uses: game-ci/unity-builder@cloud-runner-develop
+        id: aws-fargate-unity-build
+        timeout-minutes: 25
+        with:
+          cloudRunnerCluster: aws
+          versioning: None
+          projectPath: ${{ matrix.projectPath }}
+          unityVersion: ${{ matrix.unityVersion }}
+          targetPlatform: ${{ matrix.targetPlatform }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
