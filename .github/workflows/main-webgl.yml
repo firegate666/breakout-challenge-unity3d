@@ -35,18 +35,18 @@ jobs:
         with:
           name: Test results
           path: ${{ steps.tests.outputs.artifactsPath }}
-
-      # Build Win64
+          
+      # Build WebGL
       - name: Build project
         uses: game-ci/unity-builder@v2
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
         with:
-          targetPlatform: StandaloneWindows64
+          targetPlatform: WebGL
 
-      # Archive
+      # Output
       - uses: actions/upload-artifact@v2
         with:
-          name: BuildWin64
+          name: BuildWebGL
           path: build
