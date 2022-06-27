@@ -1,4 +1,4 @@
-name: Actions 😎
+name: Actions Win64 😎
 
 on: [workflow_dispatch, push, pull_request]
 

@@ -1,4 +1,4 @@
-name: Actions 😎
+name: Actions WebGL 😎
 
 on: [workflow_dispatch, push, pull_request]
 
