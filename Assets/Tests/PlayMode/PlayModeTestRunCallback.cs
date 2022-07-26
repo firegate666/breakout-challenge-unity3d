@@ -1,4 +1,3 @@
-using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
@@ -16,6 +15,7 @@ public class PlayModeTestRunCallback : ITestRunCallback
 
     public void RunFinished(ITestResult testResults)
     {
+#if !UNITY_EDITOR        
         var result = testResults.ToXml(true);
         var path = Path.GetFullPath(Path.Combine(Application.dataPath, ".//result.xml"));
         var writer = new StreamWriter(path, false);
@@ -25,6 +25,7 @@ public class PlayModeTestRunCallback : ITestRunCallback
             )
         );
         writer.Close();
+#endif
     }
 
     public void TestStarted(ITest test)
