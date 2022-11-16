@@ -1,0 +1,65 @@
+name: sonarqube-check
+on: [push, workflow_dispatch]
+
+jobs:
+  sonarqube-check:
+    runs-on: ubuntu-latest
+    container: unityci/editor:ubuntu-2021.3.2f1-windows-mono-1.0.1
+    env:
+      DOTNET_ROOT: '/opt/unity/Editor/Data/NetCore/Sdk-2.2.107'
+    steps:
+      - name: Update git version
+        run: |
+          apt-get update
+          apt-get install software-properties-common -y
+          add-apt-repository ppa:git-core/ppa -y
+          apt-get update
+          apt-get upgrade -y
+          apt-get install git -y
+          git --version
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+      - name: Setup ssh agent
+        uses: webfactory/ssh-agent@v0.6.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_GITHUB_POPCORN }}
+      - name: Install JDK 11 for SonarScanner .NET
+        run: apt update && apt install -y openjdk-11-jre-headless
+      - name: Install SonarScanner .NET
+        run: $DOTNET_ROOT/dotnet tool install dotnet-sonarscanner --tool-path ../sonarscanner --version 5.8.0
+      - name: Cache Library Builder
+        uses: actions/cache@v2
+        with:
+          path: Library
+          key: Library-2021.3.2f1
+
+      - name: Activate unity and generate solution files
+        continue-on-error: true
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        run: |
+          unity-editor -username $UNITY_EMAIL -password $UNITY_PASSWORD -serial $UNITY_SERIAL -buildTarget Win64 -nographics -batchmode -logFile /dev/stdout -projectPath . -executeMethod UnityEditor.SyncVS.SyncSolution -quit
+          unity-editor -username $UNITY_EMAIL -password $UNITY_PASSWORD -serial $UNITY_SERIAL -buildTarget Win64 -nographics -batchmode -logFile /dev/stdout -projectPath . -executeMethod UnityEditor.SyncVS.SyncSolution -quit
+
+      - name: Build and scan Builder project
+        env:
+          FrameworkPathOverride: '/opt/unity/Editor/Data/MonoBleedingEdge/bin'
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_HOST_URL: "https://sonarcloud.io"
+        run: |
+          ../sonarscanner/dotnet-sonarscanner begin /k:"firegate666_breakout-challenge-unity3d" /d:sonar.login="$SONAR_TOKEN" /d:sonar.host.url="$SONAR_HOST_URL" /o:"firegate666" /d:sonar.exclusions=Library/**
+          $DOTNET_ROOT/dotnet build breakout-challenge-unity3d.sln
+          ../sonarscanner/dotnet-sonarscanner end /d:sonar.login="$SONAR_TOKEN"
+
+      - name: Return license
+        if: always()
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        run: unity-editor -quit -batchmode -returnlicense -username $UNITY_EMAIL -password $UNITY_PASSWORD -nographics -logFile /dev/stdout -quit
