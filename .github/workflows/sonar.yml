@@ -5,8 +5,6 @@ jobs:
   sonarqube-check:
     runs-on: ubuntu-latest
     container: unityci/editor:ubuntu-2021.3.2f1-windows-mono-1.0.1
-    env:
-      DOTNET_ROOT: '/opt/unity/Editor/Data/NetCore/Sdk-2.2.107'
     steps:
       - name: Update git version
         run: |
@@ -18,6 +16,16 @@ jobs:
           apt-get install git -y
           git --version
           
+      - name: Install Dotnet SDK and Runtime
+        run: |
+          wget https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+          dpkg -i packages-microsoft-prod.deb
+          rm packages-microsoft-prod.deb
+          apt-get update
+          apt-get install -y dotnet-sdk-6.0
+          apt-get install -y aspnetcore-runtime-6.0
+          apt-get install -y dotnet-runtime-6.0
+          
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
@@ -27,7 +35,7 @@ jobs:
         run: apt update && apt install -y openjdk-11-jre-headless
         
       - name: Install SonarScanner .NET
-        run: $DOTNET_ROOT/dotnet tool install dotnet-sonarscanner --tool-path ../sonarscanner --version 5.8.0
+        run: dotnet tool install dotnet-sonarscanner --tool-path ../sonarscanner --version 5.8.0
         
       - name: Cache Library Builder
         uses: actions/cache@v2
@@ -42,8 +50,8 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
         run: |
-          unity-editor -username $UNITY_EMAIL -password $UNITY_PASSWORD -serial $UNITY_SERIAL -buildTarget Win64 -nographics -batchmode -logFile /dev/stdout -projectPath . -executeMethod UnityEditor.SyncVS.SyncSolution -quit
-          unity-editor -username $UNITY_EMAIL -password $UNITY_PASSWORD -serial $UNITY_SERIAL -buildTarget Win64 -nographics -batchmode -logFile /dev/stdout -projectPath . -executeMethod UnityEditor.SyncVS.SyncSolution -quit
+          unity-editor -username $UNITY_EMAIL -manualLicenseFile $UNITY_LICENSE -buildTarget Win64 -nographics -batchmode -logFile /dev/stdout -projectPath . -executeMethod UnityEditor.SyncVS.SyncSolution -quit
+          unity-editor -username $UNITY_EMAIL -manualLicenseFile $UNITY_LICENSE -buildTarget Win64 -nographics -batchmode -logFile /dev/stdout -projectPath . -executeMethod UnityEditor.SyncVS.SyncSolution -quit
 
       - name: Build and scan Builder project
         env:
@@ -52,13 +60,5 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
           ../sonarscanner/dotnet-sonarscanner begin /k:"firegate666_breakout-challenge-unity3d" /d:sonar.login="$SONAR_TOKEN" /d:sonar.host.url="$SONAR_HOST_URL" /o:"firegate666" /d:sonar.exclusions=Library/**
-          $DOTNET_ROOT/dotnet build firegate666-breakout-challenge-unity3d.sln
+          dotnet build firegate666-breakout-challenge-unity3d.sln
           ../sonarscanner/dotnet-sonarscanner end /d:sonar.login="$SONAR_TOKEN"
-
-      - name: Return license
-        if: always()
-        env:
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
-        run: unity-editor -quit -batchmode -returnlicense -username $UNITY_EMAIL -password $UNITY_PASSWORD -nographics -logFile /dev/stdout -quit
