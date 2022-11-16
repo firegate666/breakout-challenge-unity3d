@@ -43,7 +43,7 @@ jobs:
           path: Library
           key: Library-2021.3.2f1
 
-      - run: echo '$UNITY_LICENSE_FILE' > Unity_v2019.2.11f1.alf
+      - run: 'echo "$UNITY_LICENSE_FILE" > Unity_v2019.2.11f1.alf'
         shell: bash
         env:
           UNITY_LICENSE_FILE: ${{ secrets.UNITY_LICENSE_FILE }}
