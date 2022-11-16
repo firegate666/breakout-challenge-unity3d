@@ -50,7 +50,6 @@ jobs:
           FrameworkPathOverride: '/opt/unity/Editor/Data/MonoBleedingEdge/bin'
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_HOST_URL: "https://sonarcloud.io"
         run: |
           ../sonarscanner/dotnet-sonarscanner begin /k:"firegate666_breakout-challenge-unity3d" /d:sonar.login="$SONAR_TOKEN" /d:sonar.host.url="$SONAR_HOST_URL" /o:"firegate666" /d:sonar.exclusions=Library/**
           $DOTNET_ROOT/dotnet build breakout-challenge-unity3d.sln
