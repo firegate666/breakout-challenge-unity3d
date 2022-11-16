@@ -43,6 +43,11 @@ jobs:
           path: Library
           key: Library-2021.3.2f1
 
+      - run: echo '$UNITY_LICENSE_FILE' > Unity_v2019.2.11f1.alf
+        shell: bash
+        env:
+          UNITY_LICENSE_FILE: ${{ secrets.UNITY_LICENSE_FILE }}
+          
       - name: Activate unity and generate solution files
         continue-on-error: true
         env:
@@ -50,8 +55,8 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
         run: |
-          unity-editor -username $UNITY_EMAIL -manualLicenseFile $UNITY_LICENSE -buildTarget Win64 -nographics -batchmode -logFile /dev/stdout -projectPath . -executeMethod UnityEditor.SyncVS.SyncSolution -quit
-          unity-editor -username $UNITY_EMAIL -manualLicenseFile $UNITY_LICENSE -buildTarget Win64 -nographics -batchmode -logFile /dev/stdout -projectPath . -executeMethod UnityEditor.SyncVS.SyncSolution -quit
+          unity-editor -username $UNITY_EMAIL -manualLicenseFile Unity_v2019.2.11f1.alf -buildTarget Win64 -nographics -batchmode -logFile /dev/stdout -projectPath . -executeMethod UnityEditor.SyncVS.SyncSolution -quit
+          unity-editor -username $UNITY_EMAIL -manualLicenseFile Unity_v2019.2.11f1.alf -buildTarget Win64 -nographics -batchmode -logFile /dev/stdout -projectPath . -executeMethod UnityEditor.SyncVS.SyncSolution -quit
 
       - name: Build and scan Builder project
         env:
