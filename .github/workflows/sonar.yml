@@ -17,18 +17,18 @@ jobs:
           apt-get upgrade -y
           apt-get install git -y
           git --version
+          
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
           lfs: true
-      - name: Setup ssh agent
-        uses: webfactory/ssh-agent@v0.6.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_GITHUB_POPCORN }}
+          
       - name: Install JDK 11 for SonarScanner .NET
         run: apt update && apt install -y openjdk-11-jre-headless
+        
       - name: Install SonarScanner .NET
         run: $DOTNET_ROOT/dotnet tool install dotnet-sonarscanner --tool-path ../sonarscanner --version 5.8.0
+        
       - name: Cache Library Builder
         uses: actions/cache@v2
         with:
@@ -52,7 +52,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
           ../sonarscanner/dotnet-sonarscanner begin /k:"firegate666_breakout-challenge-unity3d" /d:sonar.login="$SONAR_TOKEN" /d:sonar.host.url="$SONAR_HOST_URL" /o:"firegate666" /d:sonar.exclusions=Library/**
-          $DOTNET_ROOT/dotnet build breakout-challenge-unity3d.sln
+          $DOTNET_ROOT/dotnet build firegate666-breakout-challenge-unity3d.sln
           ../sonarscanner/dotnet-sonarscanner end /d:sonar.login="$SONAR_TOKEN"
 
       - name: Return license
