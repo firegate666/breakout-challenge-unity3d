@@ -1,6 +1,10 @@
-name: Actions Win64 😎
+name: Actions WebGL 😎
 
-on: [workflow_dispatch]
+# Whenever a tag push matching pattern "v*" then run the job
+on:
+  push:
+    tags:
+      - "v*"
 
 jobs:
   build:
@@ -35,18 +39,29 @@ jobs:
         with:
           name: Test results
           path: ${{ steps.tests.outputs.artifactsPath }}
-
-      # Build Win64
+          
+      # Build WebGL
       - name: Build project
         uses: game-ci/unity-builder@v2
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
         with:
-          targetPlatform: StandaloneWindows64
+          targetPlatform: WebGL
 
-      # Archive
+      # Output
       - uses: actions/upload-artifact@v2
         with:
-          name: BuildWin64
+          name: BuildWebGL
           path: build
+
+      # This release action has worked well for me. However, you can most likely use any release action of your choosing.
+      # https://github.com/softprops/action-gh-release
+      - name: create release
+        uses: softprops/action-gh-release@v0.1.14
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          generate_release_notes: true
+          tag_name: ${{ steps.tag_version.outputs.TAG_VERSION }}
+          files: |
+            build
